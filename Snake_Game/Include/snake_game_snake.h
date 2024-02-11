@@ -46,12 +46,14 @@ public:
 
 	void update_snake_direction(SNAKE_DIRECTION enDirection);
 	void update_snake_body();
+	void increase_snake_size();
 
 private:
 	std::deque<Vector2> dqvSnakeBody;
 	GAME_U32 m_u32Size;
 	SNAKE_DIRECTION m_enDirection = SNAKE_DIRECTION_LEFT;
 	Vector2 m_vMovement = SNAKE_MOVEMENT_LEFT;
+	GAME_BOOL m_bSizeUp = false;
 };
 
 #endif // !__SNAKE_GAME_SNAKE_H__

@@ -38,7 +38,7 @@ void CSnakeGame::initialize()
 {
 	InitWindow(m_s32WindowWidth, m_s32WindowHeight, m_pcGameName);
 	SetTargetFPS(m_s32TargetFPS);
-	m_pFood->initialize_position();
+	m_pFood->set_position(generate_random_pos());
 }
 
 GAME_S32 CSnakeGame::main_loop()
@@ -51,8 +51,7 @@ GAME_S32 CSnakeGame::main_loop()
 
 		if (update_interval_passed())
 		{
-			m_pSnake->update_snake_direction(m_enNextMove);
-			m_pSnake->update_snake_body();
+			update();
 		}
 
 		set_background_colour(m_bgColour);
@@ -65,7 +64,7 @@ GAME_S32 CSnakeGame::main_loop()
 	return GAME_OK;
 }
 
-void CSnakeGame::set_background_colour(const Color bgColour)
+void CSnakeGame::set_background_colour(const Color &bgColour)
 {
 	ClearBackground(bgColour);
 }
@@ -82,8 +81,8 @@ void CSnakeGame::draw_food()
 	const GAME_FLOAT fPosCol = m_pFood->get_position_x();
 	const GAME_FLOAT fPosRow = m_pFood->get_position_y();
 	// Find actual coordinates
-	const GAME_FLOAT fPosX = fPosCol * m_fGridSize + 1;
-	const GAME_FLOAT fPosY = fPosRow * m_fGridSize + 1;
+	const GAME_FLOAT fPosX = fPosCol * m_fGridSize + 6;
+	const GAME_FLOAT fPosY = fPosRow * m_fGridSize + 6;
 
 	Image image = m_pFood->get_image();
 	Texture2D texture = LoadTextureFromImage(image);
@@ -95,7 +94,7 @@ void CSnakeGame::draw_food()
 void CSnakeGame::draw_snake()
 {
 	const std::deque<Vector2> vvBodyPos = m_pSnake->get_snake_body();
-	const GAME_U32 u32SnakeSize = m_pSnake->get_size();
+	const GAME_U32 u32SnakeSize = (GAME_U32) vvBodyPos.size();
 
 	for (GAME_U32 i = 0; i < u32SnakeSize; i++)
 	{
@@ -131,6 +130,25 @@ void CSnakeGame::read_keyboard_inputs()
 	}
 }
 
+void CSnakeGame::update()
+{
+	m_pSnake->update_snake_direction(m_enNextMove);
+	m_pSnake->update_snake_body();
+	if (food_eaten())
+	{
+		update_food_pos();
+		m_pSnake->increase_snake_size();
+		score++;
+	}
+}
+
+Vector2 CSnakeGame::generate_random_pos()
+{
+	GAME_FLOAT fPosX = static_cast<GAME_FLOAT>(GetRandomValue(0, GAME_CELL_COUNT - 1));
+	GAME_FLOAT fPosY = static_cast<GAME_FLOAT>(GetRandomValue(0, GAME_CELL_COUNT - 1));
+	return Vector2{ fPosX, fPosY };
+}
+
 GAME_BOOL CSnakeGame::update_interval_passed()
 {
 	GAME_DOUBLE dCurrentTime = GetTime();
@@ -141,4 +159,35 @@ GAME_BOOL CSnakeGame::update_interval_passed()
 	}
 
 	return false;
+}
+
+GAME_BOOL CSnakeGame::food_eaten()
+{
+	const Vector2 vFoodPos = m_pFood->get_position();
+	const Vector2 vSnakeHeadPos = m_pSnake->get_snake_body()[0];
+	return Vector2Equals(vFoodPos, vSnakeHeadPos);
+}
+
+void CSnakeGame::update_food_pos()
+{
+	Vector2 vTempPos = generate_random_pos();
+	while (!check_snake_food_collision(vTempPos))
+	{
+		vTempPos = generate_random_pos();
+	}
+	
+	m_pFood->set_position(vTempPos);
+}
+
+GAME_BOOL CSnakeGame::check_snake_food_collision(const Vector2 &vFoodPos)
+{
+	const std::deque<Vector2> dqvTempSnake = m_pSnake->get_snake_body();
+	for (GAME_U32 i = 0; i < dqvTempSnake.size(); i++)
+	{
+		if (Vector2Equals(vFoodPos, dqvTempSnake[i]))
+		{
+			return false;
+		}
+	}
+	return true;
 }

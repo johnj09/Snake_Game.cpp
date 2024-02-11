@@ -5,6 +5,11 @@
 #pragma region CFood
 CFood::CFood() {}
 
+Vector2 CFood::get_position() const
+{
+	return m_vfPos;
+}
+
 GAME_FLOAT CFood::get_position_x() const
 {
 	return m_vfPos.x;
@@ -20,29 +25,17 @@ Image CFood::get_image() const
 	return m_Image;
 }
 
-void CFood::initialize_position()
+void CFood::set_position(const Vector2 &vPos)
 {
-	m_vfPos = generate_random_pos();
-}
-
-Vector2 CFood::generate_random_pos()
-{
-	GAME_FLOAT fPosX = static_cast<GAME_FLOAT>(GetRandomValue(0, GAME_CELL_COUNT - 1));
-	GAME_FLOAT fPosY = static_cast<GAME_FLOAT>(GetRandomValue(0, GAME_CELL_COUNT - 1));
-	std::cout << fPosX << " " << fPosY << std::endl;
-
-
-	return Vector2{ fPosX, fPosY };
+	m_vfPos = vPos;
 }
 #pragma endregion
 
 #pragma region CSnake
 CSnake::CSnake()
 {
-	dqvSnakeBody.push_back({ 20, 20 });
-	dqvSnakeBody.push_back({ 21, 20 });
-	dqvSnakeBody.push_back({ 22, 20 });
-	m_u32Size = 3;
+	dqvSnakeBody.push_back({ GAME_CELL_COUNT / 2, GAME_CELL_COUNT / 2 });
+	m_u32Size = 1;
 }
 
 CSnake::~CSnake()
@@ -100,10 +93,18 @@ void CSnake::update_snake_direction(SNAKE_DIRECTION enDirection)
 
 void CSnake::update_snake_body()
 {
-
-
-	dqvSnakeBody.pop_back();
 	dqvSnakeBody.push_front(Vector2Add(dqvSnakeBody[0], m_vMovement));
+	if (m_bSizeUp == false)
+	{
+		dqvSnakeBody.pop_back();
+	}
+	m_bSizeUp = false;
+}
+
+void CSnake::increase_snake_size()
+{
+	m_bSizeUp = true;
+	m_u32Size++;
 }
 #pragma endregion
 

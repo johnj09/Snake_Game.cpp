@@ -6,7 +6,7 @@
 #define GAME_OK 0
 #define GAME_ERR 1
 
-#define GAME_CELL_COUNT 40
+#define GAME_CELL_COUNT 20
 
 typedef bool				GAME_BOOL;
 typedef unsigned char		GAME_U8;
